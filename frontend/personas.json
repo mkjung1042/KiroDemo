@@ -1,0 +1,7 @@
+[
+  { "name": "민지", "desc": "입사 1년 차 직장인", "age": 27, "region": "서울", "income": 3000, "employment": "재직", "housing": "월세" },
+  { "name": "준호", "desc": "취업 준비생", "age": 24, "region": "경기", "income": 0, "employment": "구직", "housing": "부모님집" },
+  { "name": "서연", "desc": "자취하는 대학생", "age": 22, "region": "서울", "income": 500, "employment": "학생", "housing": "월세" },
+  { "name": "태현", "desc": "전세 사는 직장인", "age": 31, "region": "서울", "income": 4500, "employment": "재직", "housing": "전세" },
+  { "name": "도윤", "desc": "지방 사회초년생", "age": 29, "region": "부산", "income": 1800, "employment": "재직", "housing": "월세" }
+]

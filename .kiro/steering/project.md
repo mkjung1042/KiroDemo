@@ -14,23 +14,30 @@
 ## 파일 담당
 - /frontend/index.html : 프론트 (HTML+CSS+JS 한 파일)
 - /frontend/policies.json : 정책 데이터
+- /frontend/personas.json : 데모용 예시 페르소나 (화면의 "예시로 체험해보기" 버튼)
 - /lambda/handler.py : Lambda (Python 3.12)
 
 ## 데이터 형식 (policies.json, 배열)
 { "id": "p1", "name": "", "minAge": 19, "maxAge": 34,
   "regions": ["전국"], "maxIncome": null,
   "employment": ["재직","구직","학생"], "housing": ["월세"],
-  "benefit": "", "deadline": "2026-12-31", "url": "" }
+  "benefit": "", "deadline": "2026-12-31 또는 상시 등 글자", "url": "",
+  "detail": "지원 내용·신청 방법·필요 서류 요약", "reason": "백업 설명" }
+- deadline이 YYYY-MM-DD면 D-day, 아니면 글자 그대로 배지로 표시
 - regions에 "전국"이 있으면 모든 지역 해당
 - maxIncome 단위는 만원, null이면 소득 조건 없음
 
 ## API
 POST {Lambda 함수 URL}
-요청: { "user": { "age": 27, "region": "서울", "income": 3000,
+요청 (설명 생성): { "mode": "explain", "user": { "age": 27, "region": "서울", "income": 3000,
                   "employment": "재직", "housing": "월세" },
         "policies": [매칭된 정책 객체 배열] }
 응답: { "results": [ { "id": "p1", "reason": "한두 문장 설명" } ] }
-- 실패 시 results는 빈 배열 → 프론트는 기본 문구 표시
+- 실패 시 results는 빈 배열 → 프론트는 입력 조건으로 만든 기본 문구 표시
+
+요청 (질문 답변): { "mode": "ask", "user": {...}, "policy": {정책 객체}, "question": "" }
+응답: { "answer": "답변" }
+- 실패 시 answer는 "지금은 답변이 어려워요..." 안내 문구
 
 ## 규칙
 - 코드는 단순하게, 외부 라이브러리 최소화
