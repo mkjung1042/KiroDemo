@@ -22,6 +22,21 @@ ASK = GUIDANCE + (
     "추측하지 말고 ‘정확한 내용은 신청 페이지에서 확인해 주세요.’라고 안내한다. 답변 문장만 출력한다."
 )
 
+PARSE = GUIDANCE + (
+    "text는 사용자가 자기 상황을 한국어 한 문장으로 쓴 것이다. 여기서 아래 다섯 값을 뽑는다. "
+    "age: 만 나이 정수. region: 서울, 경기, 인천, 부산, 기타 중 하나. "
+    "income: 연소득을 만원 단위 정수로(월급이면 12를 곱하고, 소득이 없다고 하면 0). "
+    "employment: 재직, 구직, 학생 중 하나(회사원·직장인·알바는 재직, 취준생은 구직, 대학생은 학생). "
+    "housing: 월세, 전세, 자가, 부모님집 중 하나(본가·부모님과 거주는 부모님집). "
+    "문장에서 알 수 없는 값은 추측하지 말고 null로 둔다. "
+    '{"age":27,"region":"서울","income":3000,"employment":"재직","housing":"월세"} 형식의 JSON만 출력한다.'
+)
+CHOICES = {
+    "region": {"서울", "경기", "인천", "부산", "기타"},
+    "employment": {"재직", "구직", "학생"},
+    "housing": {"월세", "전세", "자가", "부모님집"},
+}
+
 
 @lru_cache(maxsize=1)
 def bedrock_client():
@@ -77,6 +92,23 @@ def explain(user, policies):
     return {"results": results}
 
 
+def parse(text):
+    raw = generate(PARSE, {"text": text}, 200)
+    if raw.startswith("```") and raw.endswith("```"):
+        raw = raw.partition("\n")[2][:-3].strip()
+    data = json.loads(raw)
+    if not isinstance(data, dict):
+        raise ValueError("InvalidParseResult")
+    user = {}
+    for key in ("age", "income"):
+        value = data.get(key)
+        user[key] = int(value) if isinstance(value, (int, float)) and value >= 0 else None
+    for key, allowed in CHOICES.items():
+        value = data.get(key)
+        user[key] = value if value in allowed else None
+    return {"user": user}
+
+
 def reply(status, data):
     return {
         "statusCode": status,
@@ -100,6 +132,16 @@ def lambda_handler(event, context):
         return reply(400, {"error": "요청과 user는 JSON 객체여야 합니다."})
     user = body.get("user", {})
     mode = body.get("mode", "explain")
+    if mode == "parse":
+        text = body.get("text")
+        if not isinstance(text, str) or not text.strip() or len(text) > 300:
+            return reply(400, {"error": "상황을 한 문장으로 입력해 주세요."})
+        try:
+            return reply(200, parse(text.strip()))
+        except Exception as exc:
+            code = getattr(exc, "response", {}).get("Error", {}).get("Code", type(exc).__name__)
+            logging.getLogger(__name__).warning("Bedrock fallback mode=parse error=%s", code)
+            return reply(200, {"user": None})
     if mode == "explain":
         policies = body.get("policies", [])
         if not isinstance(policies, list) or not all(
@@ -112,7 +154,7 @@ def lambda_handler(event, context):
         if not isinstance(policy, dict) or not policy or not isinstance(question, str) or not question.strip():
             return reply(400, {"error": "정책과 질문을 입력해 주세요."})
     else:
-        return reply(400, {"error": "mode는 explain 또는 ask여야 합니다."})
+        return reply(400, {"error": "mode는 parse, explain, ask 중 하나여야 합니다."})
 
     try:
         if mode == "explain":

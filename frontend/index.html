@@ -55,6 +55,34 @@
   main { padding: 28px 0 80px; }
   .section-title { font-size: 15px; font-weight: 700; color: var(--muted); margin: 0 0 12px; }
 
+  .smart {
+    background: var(--ink);
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .smart-title { font-size: 16px; font-weight: 700; color: #F3F1FA; margin: 0 0 4px; }
+  .smart-title .ai { color: var(--lime); }
+  .smart-desc { font-size: 13px; color: #A9A4C8; margin: 0 0 12px; }
+  .smart-row { display: flex; gap: 8px; }
+  .smart-row input { background: var(--night); border-color: #4A4570; color: #F3F1FA; }
+  .smart-row input::placeholder { color: #8C87AE; }
+  .smart-row input:focus { border-color: var(--lime); }
+  .smart-row button {
+    flex: none;
+    background: var(--lime);
+    color: var(--ink);
+    border: none;
+    border-radius: 12px;
+    padding: 0 18px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+  .smart-row button:disabled { opacity: .6; cursor: wait; }
+  .smart-result { margin: 12px 0 0; font-size: 14px; color: var(--lime); min-height: 0; }
+  .smart-result:empty { display: none; }
   .personas { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
   .persona-btn {
     border: 2px solid var(--violet);
@@ -234,6 +262,16 @@
 </header>
 
 <main class="wrap">
+  <section class="smart">
+    <p class="smart-title"><span class="ai">AI</span>에게 한 문장으로 말해보세요</p>
+    <p class="smart-desc">나이, 지역, 소득, 일, 사는 곳을 편하게 써 주시면 조건을 알아서 채워드려요</p>
+    <div class="smart-row">
+      <input type="text" id="smart-input" maxlength="300" placeholder="예: 27살이고 서울에서 월세 사는 직장인이야. 연봉은 3천">
+      <button type="button" id="smart-btn">찾기</button>
+    </div>
+    <p class="smart-result" id="smart-result"></p>
+  </section>
+
   <p class="section-title">예시로 체험해보기</p>
   <div class="personas" id="personas"></div>
 
@@ -469,6 +507,104 @@
   }
 
   $("form").addEventListener("submit", (e) => { e.preventDefault(); search(); });
+  $("form").addEventListener("input", () => {
+    document.querySelectorAll(".persona-btn").forEach((b) => b.classList.remove("active"));
+  });
+
+  // ===== 한 문장으로 검색 =====
+  // AI(Lambda mode: "parse")가 실패하거나 API_URL이 없으면 간단한 규칙으로 뽑아요.
+  function localParse(text) {
+    const t = text.replace(/\s+/g, " ");
+    const user = { age: null, region: null, income: null, employment: null, housing: null };
+
+    const age = t.match(/(\d{2})\s*(살|세)/);
+    if (age) user.age = parseInt(age[1], 10);
+
+    if (/서울/.test(t)) user.region = "서울";
+    else if (/경기|수원|성남|용인|고양|부천|안양|화성|분당|일산/.test(t)) user.region = "경기";
+    else if (/인천/.test(t)) user.region = "인천";
+    else if (/부산/.test(t)) user.region = "부산";
+    else if (/대구|광주|대전|울산|세종|강원|충북|충남|전북|전남|경북|경남|제주|지방/.test(t)) user.region = "기타";
+
+    const monthly = t.match(/월\s*(?:급|소득|수입)?\s*(?:은|이|는)?\s*(\d+)\s*만/);
+    const thousand = t.match(/(\d+(?:\.\d+)?)\s*천/);
+    const manwon = t.match(/(\d{3,5})\s*만/);
+    if (/소득\s*(?:이|은)?\s*없|수입\s*(?:이|은)?\s*없|무직|백수/.test(t)) user.income = 0;
+    else if (monthly) user.income = parseInt(monthly[1], 10) * 12;
+    else if (thousand) user.income = Math.round(parseFloat(thousand[1]) * 1000);
+    else if (manwon) user.income = parseInt(manwon[1], 10);
+
+    if (/취준|취업\s*준비|구직|백수|무직|일\s*(?:을|자리)?\s*(?:구하|찾)/.test(t)) user.employment = "구직";
+    else if (/대학|학생|휴학|대학원/.test(t)) user.employment = "학생";
+    else if (/직장|회사|재직|근무|일하|알바|사회\s*초년|사원|다니/.test(t)) user.employment = "재직";
+
+    if (/월세/.test(t)) user.housing = "월세";
+    else if (/전세/.test(t)) user.housing = "전세";
+    else if (/부모|본가|엄마|아빠/.test(t)) user.housing = "부모님집";
+    else if (/자가|내\s*집|집\s*(?:이|을)?\s*(?:있|샀)/.test(t)) user.housing = "자가";
+
+    if (user.income === null && user.employment && user.employment !== "재직") user.income = 0;
+    return user;
+  }
+
+  const FIELD_LABELS = { age: "나이", region: "지역", income: "연소득", employment: "취업 상태", housing: "주거 형태" };
+
+  async function smartSearch() {
+    const text = $("smart-input").value.trim();
+    if (!text) { toast("상황을 한 문장으로 입력해 주세요"); return; }
+    const btn = $("smart-btn");
+    btn.disabled = true;
+    btn.textContent = "분석 중";
+    $("smart-result").textContent = "";
+
+    let parsed = null;
+    let byAI = false;
+    if (API_URL) {
+      try {
+        const data = await postApi({ mode: "parse", text });
+        if (data && data.user) { parsed = data.user; byAI = true; }
+      } catch (err) { console.error(err); }
+    }
+    const local = localParse(text);
+    if (!parsed) parsed = local;
+    else Object.keys(local).forEach((k) => { if (parsed[k] === null || parsed[k] === undefined) parsed[k] = local[k]; });
+
+    btn.disabled = false;
+    btn.textContent = "찾기";
+    document.querySelectorAll(".persona-btn").forEach((b) => b.classList.remove("active"));
+
+    if (parsed.age !== null) $("age").value = parsed.age;
+    if (parsed.region !== null) $("region").value = parsed.region;
+    if (parsed.income !== null) $("income").value = parsed.income;
+    if (parsed.employment !== null) $("employment").value = parsed.employment;
+    if (parsed.housing !== null) $("housing").value = parsed.housing;
+
+    const missing = Object.keys(FIELD_LABELS).filter((k) => parsed[k] === null || parsed[k] === undefined);
+    const known = [
+      parsed.age !== null ? parsed.age + "세" : null,
+      parsed.region,
+      parsed.income !== null ? "연 " + Number(parsed.income).toLocaleString() + "만 원" : null,
+      parsed.employment,
+      parsed.housing
+    ].filter((v) => v !== null && v !== undefined);
+    $("smart-result").textContent = (byAI ? "AI가 이렇게 이해했어요: " : "이렇게 이해했어요: ") + (known.join(" · ") || "조건을 찾지 못했어요");
+
+    const mustHave = missing.filter((k) => k === "age" || k === "income");
+    if (mustHave.length) {
+      toast(mustHave.map((k) => FIELD_LABELS[k]).join(", ") + "을(를) 아래에 입력해 주세요");
+      $("summary").innerHTML = "";
+      $("results").innerHTML = "";
+      $(mustHave[0]).focus();
+      return;
+    }
+    if (missing.length) toast(missing.map((k) => FIELD_LABELS[k]).join(", ") + "은(는) 기본값으로 찾았어요");
+    search();
+  }
+
+  $("smart-btn").addEventListener("click", smartSearch);
+  $("smart-input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); smartSearch(); }
+  });
 
   $("results").addEventListener("click", (e) => {
     const card = e.target.closest(".card");

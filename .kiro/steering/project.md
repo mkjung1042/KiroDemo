@@ -35,6 +35,10 @@ POST {Lambda 함수 URL}
 응답: { "results": [ { "id": "p1", "reason": "한두 문장 설명" } ] }
 - 실패 시 results는 빈 배열 → 프론트는 입력 조건으로 만든 기본 문구 표시
 
+요청 (한 문장 → 조건 추출): { "mode": "parse", "text": "27살 서울 월세 직장인, 연봉 3천" }
+응답: { "user": { "age": 27, "region": "서울", "income": 3000, "employment": "재직", "housing": "월세" } }
+- 알 수 없는 값은 null, 실패 시 { "user": null } → 프론트는 규칙 기반으로 대신 추출
+
 요청 (질문 답변): { "mode": "ask", "user": {...}, "policy": {정책 객체}, "question": "" }
 응답: { "answer": "답변" }
 - 실패 시 answer는 "지금은 답변이 어려워요..." 안내 문구
