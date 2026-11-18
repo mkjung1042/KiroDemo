@@ -248,10 +248,18 @@
   .ai-settings { padding-bottom: 48px; font-size: 14px; color: var(--muted); }
   .ai-settings summary { cursor: pointer; font-weight: 700; }
   .ai-settings p { margin: 8px 0; }
+  .key-help-link { color: var(--violet); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+  .key-help-new-tab { font-size: .9em; font-weight: 400; }
+  .key-setup-guide { margin: 12px 0; }
+  .key-setup-guide ol { padding-inline-start: 1.7em; line-height: 1.6; }
+  .key-setup-guide li + li { margin-top: .45em; }
   .ai-row { display: flex; gap: 8px; }
   .ai-row input { font-size: 14px; padding: 10px 12px; }
   .ai-row button { flex: none; border: none; border-radius: 12px; padding: 0 16px; font-family: inherit; font-weight: 700; cursor: pointer; background: var(--violet); color: #FFFFFE; }
-  .ai-row button.ghost { background: var(--line); color: var(--ink); }
+  .ai-connection:not([hidden]) { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .ai-connection .ai-on { font-weight: 700; }
+  .disconnect-btn { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; cursor: pointer; }
+  .disconnect-btn:hover { border-color: var(--violet); }
   .ai-on { color: var(--violet); }
 
 
@@ -521,15 +529,30 @@
 </main>
 
 <footer class="ai-settings wrap">
-  <details>
+  <details id="gemini-setup">
     <summary>AI 연결 설정 · <span id="ai-status"></span></summary>
-    <p>Google AI Studio에서 받은 Gemini API 키를 넣으면 AI 기능이 켜져요. 키는 이 브라우저에만 저장돼요.</p>
+    <p>API 키 없이도 정책을 찾을 수 있어요. AI에게 직접 질문하려면 아래에서 키를 발급받으세요.</p>
+    <p><a class="key-help-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio에서 API 키 발급받기 <span aria-hidden="true">↗</span><span class="key-help-new-tab"> (새 탭)</span></a></p>
+    <details class="key-setup-guide">
+      <summary>처음이신가요? Gemini 설정 방법</summary>
+      <ol>
+        <li>위의 <strong>Google AI Studio에서 API 키 발급받기</strong>를 누르고, 새 탭에서 Google 계정으로 로그인하세요.</li>
+        <li><strong>API 키</strong> 목록에 내 키가 있으면 그 키를 여세요. 목록이 비어 있으면 <strong>API 키 만들기(Create API key)</strong>를 누르고 사용할 프로젝트를 선택해 키를 만드세요.</li>
+        <li>키의 <strong>복사</strong> 버튼을 누른 뒤, 이 탭으로 돌아오세요. 아래 <strong>Gemini API 키 붙여넣기</strong> 칸에 붙여넣고 <strong>저장</strong>을 누르세요.</li>
+        <li>화면 위 한 문장 검색에 “서울에서 월세로 사는 27살 직장인이야. 연봉은 3천만 원이야”를 입력하고 <strong>찾기</strong>를 누르세요. 결과가 <strong>AI가 이렇게 이해했어요</strong>로 시작하면 연결에 성공한 거예요.</li>
+      </ol>
+      <p>선택할 프로젝트가 안 보이나요? AI Studio의 <strong>대시보드 → 프로젝트 → 프로젝트 가져오기</strong>에서 내 프로젝트를 추가한 뒤 API 키 목록으로 돌아오세요. <a class="key-help-link" href="https://ai.google.dev/gemini-api/docs/api-key?hl=ko" target="_blank" rel="noopener noreferrer">Google 공식 안내 (새 탭)</a></p>
+    </details>
+    <p>키는 이 브라우저에 저장돼요. 공용 컴퓨터에서는 사용 후 <strong>연결 해지하기</strong>를 누르세요.</p>
     <div class="ai-row">
       <input type="password" id="gemini-key" placeholder="Gemini API 키 붙여넣기" autocomplete="off">
       <button type="button" id="gemini-save">저장</button>
-      <button type="button" id="gemini-clear" class="ghost">삭제</button>
     </div>
   </details>
+  <div class="ai-connection" id="gemini-connected" hidden>
+    <span class="ai-on">Gemini 연결됨</span>
+    <button type="button" id="gemini-disconnect" class="disconnect-btn">연결 해지하기</button>
+  </div>
 </footer>
 
 <div id="chat-modal" class="modal" hidden>
@@ -649,6 +672,9 @@
 
   let geminiModel = null;      // 마지막으로 성공한 모델
   let geminiCandidates = null; // 시도할 모델 순서
+  function checkGeminiConnection(key) {
+    if (!key || key !== getGeminiKey()) throw new Error("Gemini 연결이 변경됐어요");
+  }
   async function listGeminiModels(key) {
     if (geminiCandidates) return geminiCandidates;
     const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", {
@@ -656,6 +682,7 @@
     });
     if (!res.ok) throw new Error("Gemini 모델 목록 실패 HTTP " + res.status);
     const data = await res.json();
+    checkGeminiConnection(key);
     const SPECIAL = /(image|tts|live|audio|embedding|8b|exp|learnlm|robotics|computer-use|veo|imagen|aqa|gemma)/;
     const all = (data.models || []).map((m) => m.name).filter((n, i, arr) =>
       ((data.models[i].supportedGenerationMethods || []).includes("generateContent")) && /gemini/.test(n) && !SPECIAL.test(n));
@@ -691,6 +718,7 @@
     const order = geminiModel && !slowModels.has(geminiModel) ? [geminiModel, ...ranked.filter((m) => m !== geminiModel)] : ranked;
     let lastError = null;
     for (const model of order) {
+      checkGeminiConnection(key);
       const remaining = deadline - Date.now();
       if (remaining < 800) break;
       const generationConfig = Object.assign(
@@ -716,6 +744,7 @@
         if (res.status === 401 || res.status === 403) throw Object.assign(new Error("Gemini 키 권한 오류 HTTP " + res.status), { fatal: true });
         if (!res.ok) throw new Error(`Gemini HTTP ${res.status} (${model})`);
         const out = await res.json();
+        checkGeminiConnection(key);
         const parts = (((out.candidates || [])[0] || {}).content || {}).parts || [];
         const text = parts.filter((x) => !x.thought).map((x) => x.text || "").join("").trim();
         if (!text) throw new Error(`Gemini 빈 응답 (${model})`);
@@ -726,6 +755,7 @@
         slowModels.delete(model);
         return result;
       } catch (err) {
+        checkGeminiConnection(key);
         lastError = err.name === "AbortError" ? new Error(`Gemini 시간 초과 (${model})`) : err;
         if (err.fatal) break;
         slowModels.add(model);
@@ -1095,26 +1125,44 @@
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("chat-modal").hidden) closeChat(); });
 
   function refreshAiStatus() {
-    const on = aiEnabled();
-    $("ai-status").textContent = API_URL ? "Bedrock 연결됨" : (getGeminiKey() ? "Gemini 연결됨" : "AI 미연결 (규칙 기반)");
+    const hasKey = Boolean(getGeminiKey());
+    const on = Boolean(API_URL || hasKey);
+    const setup = $("gemini-setup");
+    setup.hidden = hasKey;
+    $("gemini-connected").hidden = !hasKey;
+    if (hasKey) {
+      setup.open = false;
+      setup.querySelector(".key-setup-guide").open = false;
+      $("gemini-key").value = "";
+    }
+    $("ai-status").textContent = API_URL ? "Bedrock 연결됨" : "AI 미연결 (규칙 기반)";
     $("ai-status").className = on ? "ai-on" : "";
     $("smart-title").innerHTML = on ? '<span class="ai">AI</span>에게 한 문장으로 말해보세요' : "한 문장으로 말해보세요";
   }
+  function syncGeminiConnection() {
+    geminiModel = null;
+    geminiCandidates = null;
+    slowModels.clear();
+    noThinkingUnsupported.clear();
+    refreshAiStatus();
+  }
+  window.addEventListener("storage", (event) => {
+    if (event.key === GEMINI_KEY_STORAGE || event.key === null) syncGeminiConnection();
+  });
   $("gemini-save").addEventListener("click", () => {
     const v = $("gemini-key").value.trim();
     if (!v) { toast("키를 붙여넣어 주세요"); return; }
     try { localStorage.setItem(GEMINI_KEY_STORAGE, v); } catch (e) { toast("이 브라우저에서는 저장할 수 없어요"); return; }
-    geminiModel = null; geminiCandidates = null;
-    $("gemini-key").value = "";
-    refreshAiStatus();
+    syncGeminiConnection();
+    $("gemini-disconnect").focus();
     toast("AI가 연결됐어요");
     listGeminiModels(v).catch((e) => console.warn(e.message));
   });
-  $("gemini-clear").addEventListener("click", () => {
-    try { localStorage.removeItem(GEMINI_KEY_STORAGE); } catch (e) {}
-    geminiModel = null; geminiCandidates = null;
-    refreshAiStatus();
-    toast("AI 연결을 해제했어요");
+  $("gemini-disconnect").addEventListener("click", () => {
+    try { localStorage.removeItem(GEMINI_KEY_STORAGE); } catch (e) { toast("키를 지우지 못했어요. 다시 시도해 주세요."); return; }
+    syncGeminiConnection();
+    $("gemini-setup").querySelector("summary").focus();
+    toast("Gemini 연결을 해지했어요");
   });
 
   async function init() {
