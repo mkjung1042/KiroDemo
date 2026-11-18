@@ -347,8 +347,15 @@
   .calc-row select { flex: 0 0 110px; }
   .calc-row input { flex: 1 1 180px; min-width: 0; }
   .calc-row button { flex: 0 0 auto; background: var(--violet); color: #FFFFFE; border: none; border-radius: 12px; padding: 0 20px; min-height: 50px; font-family: inherit; font-weight: 700; cursor: pointer; }
+  .calc-work { margin-top: 10px; align-items: center; }
+  .calc-work[hidden] { display: none; }
+  .calc-field { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; margin: 0; }
+  .calc-field input { width: 90px; height: 48px; padding: 0 12px; box-sizing: border-box; }
+  .calc-hint { font-size: 13px; color: var(--muted); }
   .calc-result { margin: 10px 0 0; font-size: 15px; font-weight: 700; color: var(--violet); }
   .calc-result:empty { display: none; }
+  .calc-row select, .calc-row input, .calc-row button { height: 52px; min-height: 52px; box-sizing: border-box; margin: 0; }
+  .calc-row select, .calc-row input { padding: 0 16px; border-radius: 12px; font-size: 16px; line-height: normal; }
 
   /* ===== 분류 배지 ===== */
   .badges { display: flex; gap: 6px; flex: none; align-items: center; }
@@ -425,7 +432,7 @@
 
   <section class="calc">
     <p class="calc-title">💰 연봉 계산기</p>
-    <p class="calc-desc">시급이나 월급만 알아도 괜찮아요. 연봉으로 바꿔서 아래 연소득 칸에 넣어드려요 (시급은 하루 8시간·주 5일 기준)</p>
+    <p class="calc-desc">시급이나 월급만 알아도 괜찮아요. 연봉으로 바꿔서 아래 연소득 칸에 넣어드려요</p>
     <div class="calc-row">
       <select id="calc-type">
         <option value="hour">시급</option>
@@ -434,6 +441,11 @@
       </select>
       <input type="number" id="calc-amount" min="0" placeholder="금액 (원)">
       <button type="button" id="calc-btn">계산해서 넣기</button>
+    </div>
+    <div class="calc-row calc-work" id="calc-work">
+      <label class="calc-field">주 <input type="number" id="calc-days" min="1" max="7" placeholder="5"> 일</label>
+      <label class="calc-field">하루 <input type="number" id="calc-hours" min="1" max="24" step="0.5" placeholder="8"> 시간</label>
+      <span class="calc-hint">시급은 근무 일수와 시간을 꼭 입력해 주세요</span>
     </div>
     <p class="calc-result" id="calc-result"></p>
   </section>
@@ -955,8 +967,9 @@
   }
 
   // ===== 연봉 계산기 =====
-  const HOURS_PER_YEAR = 8 * 5 * 52; // 하루 8시간 × 주 5일 × 52주 = 2,080시간
+  const WEEKS_PER_YEAR = 52;
   $("calc-type").addEventListener("change", () => {
+    $("calc-work").hidden = $("calc-type").value !== "hour";
     $("calc-amount").placeholder = { hour: "시급 (원) 예: 10030", month: "월급 (원) 예: 2500000", year: "연봉 (원) 예: 30000000" }[$("calc-type").value];
   });
   $("calc-type").dispatchEvent(new Event("change"));
@@ -964,16 +977,24 @@
     const won = Number($("calc-amount").value);
     if (!won || won < 0) { toast("금액을 원 단위로 입력해 주세요"); $("calc-amount").focus(); return; }
     const type = $("calc-type").value;
-    const yearWon = type === "hour" ? won * HOURS_PER_YEAR : type === "month" ? won * 12 : won;
+    let days = 0, hours = 0;
+    if (type === "hour") {
+      days = Number($("calc-days").value);
+      hours = Number($("calc-hours").value);
+      if (!days || days < 1 || days > 7) { toast("주 근무 일수를 1~7일로 입력해 주세요"); $("calc-days").focus(); return; }
+      if (!hours || hours <= 0 || hours > 24) { toast("하루 근무 시간을 입력해 주세요"); $("calc-hours").focus(); return; }
+    }
+    const yearWon = type === "hour" ? won * hours * days * WEEKS_PER_YEAR : type === "month" ? won * 12 : won;
     const man = Math.round(yearWon / 10000);
     $("income").value = man;
     document.querySelectorAll(".persona-btn").forEach((b) => b.classList.remove("active"));
-    const how = type === "hour" ? `시급 ${won.toLocaleString()}원 × 연 2,080시간` : type === "month" ? `월급 ${won.toLocaleString()}원 × 12개월` : `연봉 ${won.toLocaleString()}원`;
+    const how = type === "hour" ? `시급 ${won.toLocaleString()}원 × 하루 ${hours}시간 × 주 ${days}일 × 52주` : type === "month" ? `월급 ${won.toLocaleString()}원 × 12개월` : `연봉 ${won.toLocaleString()}원`;
     $("calc-result").textContent = `연 ${man.toLocaleString()}만 원 (${how}) → 연소득 칸에 넣었어요`;
     toast("연소득에 입력했어요. 나머지 조건을 확인하고 검색하세요");
   }
   $("calc-btn").addEventListener("click", calcIncome);
-  $("calc-amount").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); calcIncome(); } });
+  ["calc-amount", "calc-days", "calc-hours"].forEach((id) =>
+    $(id).addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); calcIncome(); } }));
 
   $("smart-btn").addEventListener("click", smartSearch);
   $("smart-input").addEventListener("keydown", (e) => {
