@@ -710,6 +710,28 @@
     }
   }
 
+  // AI 없이 답할 때: 정책 정보에서 질문과 관련된 문장을 골라 답해요.
+  function localAnswer(policy, question) {
+    const sentences = String(policy.detail || "").split(/(?<=[.!?다요])\s+/).map((x) => x.trim()).filter(Boolean);
+    const pick = (re) => sentences.filter((x) => re.test(x));
+    const tail = " 정확한 내용은 신청 페이지에서 확인해 주세요.";
+    if (/언제|마감|기간|기한|시기|까지/.test(question)) {
+      const when = /^\d{4}-\d{2}-\d{2}$/.test(policy.deadline || "") ? `신청 마감일은 ${policy.deadline}이에요.` : `신청 시기는 '${policy.deadline || "공고 확인"}'이에요.`;
+      const extra = (pick(/시기|기간|매년|분기|상시|마감/)[0] || pick(/모집|공고/)[0] || "");
+      return [when, extra].filter(Boolean).join(" ") + tail;
+    }
+    if (/필요|서류|준비|제출|증빙|뭐가/.test(question)) {
+      const docs = pick(/서류|증빙|계약서|제출|등본|확인서|신분증|준비/);
+      if (docs.length) return docs.slice(0, 2).join(" ") + tail;
+    }
+    if (/어디|방법|어떻게|신청/.test(question)) {
+      const how = pick(/신청|접수|온라인|방문|포털|사이트|앱/);
+      if (how.length) return how.slice(0, 2).join(" ") + tail;
+    }
+    if (/얼마|금액|혜택|지원/.test(question)) return `${policy.benefit}.` + tail;
+    return (sentences.slice(0, 2).join(" ") || policy.benefit || "") + tail;
+  }
+
   async function ask(card, question) {
     question = question.trim();
     if (!question) return;
@@ -722,15 +744,15 @@
     bubbles.appendChild(answer);
 
     if (!aiEnabled()) {
-      answer.textContent = policy.detail || "정확한 내용은 신청 페이지에서 확인해 주세요.";
+      answer.textContent = localAnswer(policy, question);
       return;
     }
     try {
       const data = await postApi({ mode: "ask", user: currentUser, policy, question });
-      answer.textContent = data.answer || "지금은 답변이 어려워요. 신청 페이지에서 확인해 주세요.";
+      answer.textContent = data.answer || localAnswer(policy, question);
     } catch (err) {
       console.error(err);
-      answer.textContent = "지금은 답변이 어려워요. 신청 페이지에서 확인해 주세요.";
+      answer.textContent = localAnswer(policy, question);
     }
   }
 
