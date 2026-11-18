@@ -254,6 +254,106 @@
   .ai-row button.ghost { background: var(--line); color: var(--ink); }
   .ai-on { color: var(--violet); }
 
+
+  /* ===== 가독성 개선 ===== */
+  body { font-size: 16px; line-height: 1.65; }
+  .wrap { max-width: 760px; }
+  header { padding: 44px 20px 52px; }
+  header h1 { font-size: 44px; margin: 18px 0 10px; }
+  header p { font-size: 18px; line-height: 1.6; }
+  main { padding-top: 32px; }
+
+  .smart { padding: 24px; border-radius: 28px; margin-bottom: 32px; }
+  .smart-title { font-size: 20px; }
+  .smart-desc { font-size: 15px; margin-bottom: 16px; color: #BDB8DA; }
+  .smart-row { flex-wrap: wrap; }
+  .smart-row input { flex: 1 1 260px; min-width: 0; font-size: 16px; padding: 14px 16px; }
+  .smart-row button { flex: 0 0 auto; min-height: 52px; padding: 0 28px; font-size: 16px; }
+  .smart-result { font-size: 15px; font-weight: 700; background: var(--night); border-radius: 12px; padding: 10px 14px; }
+
+  .section-title { font-size: 17px; color: var(--ink); margin-bottom: 14px; }
+  .personas { gap: 10px; margin-bottom: 32px; }
+  .persona-btn { padding: 10px 16px; font-size: 15px; }
+
+  .form-card { padding: 28px; border-radius: 28px; }
+  .grid { gap: 20px; }
+  label { font-size: 15px; margin-bottom: 8px; }
+  input, select { padding: 14px 16px; }
+  .primary-btn { min-height: 56px; font-size: 18px; margin-top: 24px; }
+
+  #summary { margin: 48px 0 20px; font-size: 24px; }
+  #summary .count { font-size: 40px; }
+
+  .card { padding: 28px; border-radius: 28px; margin-bottom: 20px; }
+  .card h3 { font-size: 22px; line-height: 1.4; }
+  .badge { font-size: 13px; padding: 6px 12px; }
+  .benefit { font-size: 16px; color: #3F3B5C; margin: 10px 0 18px; }
+  .why { padding: 16px 18px; border-left: 4px solid var(--violet); border-radius: 12px; }
+  .why-title { font-size: 14px; margin-bottom: 6px; }
+  .why-text { font-size: 16px; line-height: 1.7; color: var(--ink); }
+  .actions { gap: 10px; margin-top: 18px; }
+  .link-btn, .alarm-btn { min-height: 50px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+
+  details.ask { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 4px; }
+  details.ask > summary {
+    list-style: none; cursor: pointer; font-size: 15px; font-weight: 700; color: var(--violet);
+    padding: 12px 0; display: flex; justify-content: space-between; align-items: center;
+  }
+  details.ask > summary::-webkit-details-marker { display: none; }
+  details.ask > summary::after { content: "＋"; font-size: 18px; }
+  details.ask[open] > summary::after { content: "－"; }
+  .chip { font-size: 14px; padding: 8px 14px; }
+  .ask-row input { padding: 12px 14px; }
+  .q, .a { font-size: 15px; line-height: 1.6; }
+  .a { padding: 12px 16px; }
+
+  @media (max-width: 520px) {
+    header { padding: 32px 20px 40px; }
+    header h1 { font-size: 36px; }
+    header p { font-size: 16px; }
+    .pill { font-size: 12px; }
+    .smart { padding: 20px; }
+    .smart-row button { flex: 1 1 100%; }
+    .card { padding: 22px; }
+    .card h3 { font-size: 20px; }
+    .actions { flex-direction: column; }
+  }
+
+  /* ===== 결과 카드 가로 배치 ===== */
+  #summary, #results {
+    position: relative; left: 50%; transform: translateX(-50%);
+    width: min(1180px, calc(100vw - 40px));
+  }
+  #results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+    align-items: start;
+  }
+  #results .card { margin-bottom: 0; display: flex; flex-direction: column; }
+  #results { align-items: stretch; }
+  /* 설명 길이가 달라도 버튼은 카드 아래쪽에 맞춰요 */
+  #results .why { margin-bottom: auto; }
+  #results .actions { margin-top: 18px; padding-top: 0; }
+  #results .benefit { min-height: calc(16px * 1.65 * 2); }
+  .swipe-hint { display: none; font-size: 14px; font-weight: 500; color: var(--muted); margin-left: 8px; }
+
+  @media (max-width: 720px) {
+    #summary { width: calc(100vw - 40px); }
+    #results {
+      display: flex;
+      width: 100vw;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding: 4px 20px 16px;
+      gap: 14px;
+      scrollbar-width: none;
+    }
+    #results::-webkit-scrollbar { display: none; }
+    #results .card { flex: 0 0 86%; scroll-snap-align: center; }
+    .swipe-hint { display: block; margin: 6px 0 0; }
+  }
+
   @media (max-width: 520px) {
     .grid { grid-template-columns: 1fr; }
     header h1 { font-size: 32px; }
@@ -413,51 +513,93 @@
       '{"age":27,"region":"서울","income":3000,"employment":"재직","housing":"월세"} 형식의 JSON만 출력한다.'
   };
 
-  let geminiModel = null;
-  async function pickGeminiModel(key) {
-    if (geminiModel) return geminiModel;
+  let geminiModel = null;      // 마지막으로 성공한 모델
+  let geminiCandidates = null; // 시도할 모델 순서
+  async function listGeminiModels(key) {
+    if (geminiCandidates) return geminiCandidates;
     const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", {
       headers: { "x-goog-api-key": key }
     });
     if (!res.ok) throw new Error("Gemini 모델 목록 실패 HTTP " + res.status);
     const data = await res.json();
-    const SPECIAL = /(image|tts|live|audio|embedding|8b|exp|learnlm|robotics|computer-use|veo|imagen|aqa)/;
-    const all = (data.models || []).filter((m) =>
-      (m.supportedGenerationMethods || []).includes("generateContent") && /gemini/.test(m.name) && !SPECIAL.test(m.name));
-    // 빠른 모델(flash, hydrogen 등)을 먼저 찾고, 없으면 쓸 수 있는 아무 Gemini 모델이나 써요.
-    let usable = all.filter((m) => /(flash|hydrogen)/.test(m.name) && !/lite/.test(m.name));
-    if (!usable.length) usable = all.filter((m) => !/lite/.test(m.name));
-    if (!usable.length) usable = all;
-    const latest = usable.find((m) => m.name === "models/gemini-flash-latest");
-    if (latest) return (geminiModel = latest.name);
+    const SPECIAL = /(image|tts|live|audio|embedding|8b|exp|learnlm|robotics|computer-use|veo|imagen|aqa|gemma)/;
+    const all = (data.models || []).map((m) => m.name).filter((n, i, arr) =>
+      ((data.models[i].supportedGenerationMethods || []).includes("generateContent")) && /gemini/.test(n) && !SPECIAL.test(n));
     const version = (n) => parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/) || [0, 0])[1]);
-    usable.sort((a, b) => (version(b.name) - version(a.name)) || (/preview/.test(a.name) - /preview/.test(b.name)));
-    if (!usable.length) throw new Error("사용 가능한 Gemini 모델이 없어요");
-    return (geminiModel = usable[0].name);
+    // 점수: 정식(비 preview) 빠른 모델 > 정식 일반 > preview. 같은 점수면 최신 버전 우선.
+    const score = (n) => (/preview/.test(n) ? 0 : 4) + (/(flash|hydrogen)/.test(n) ? 2 : 0) + (/lite/.test(n) ? -1 : 0) + (/latest/.test(n) ? 1 : 0);
+    all.sort((a, b) => (score(b) - score(a)) || (version(b) - version(a)));
+    if (!all.length) throw new Error("사용 가능한 Gemini 모델이 없어요");
+    geminiCandidates = all.slice(0, 6);
+    console.info("Gemini 후보 모델:", geminiCandidates);
+    return geminiCandidates;
+  }
+
+  // 기능별 최대 대기 시간(ms). 넘으면 규칙 기반으로 대신 보여줘요.
+  const AI_TIMEOUT = { parse: 5000, explain: 12000, ask: 12000 };
+  const PER_MODEL_TIMEOUT = 7000;
+  const MAX_TOKENS = { parse: 300, explain: 1200, ask: 600 };
+  const noThinkingUnsupported = new Set(); // 생각 끄기 옵션을 거부한 모델
+  const slowModels = new Set();            // 느리거나 실패한 모델은 뒤로 미뤄요
+
+  async function fetchWithTimeout(url, options, ms) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), ms);
+    try { return await fetch(url, Object.assign({}, options, { signal: ctrl.signal })); }
+    finally { clearTimeout(timer); }
   }
 
   async function callGemini(mode, data) {
     const key = getGeminiKey();
-    const model = await pickGeminiModel(key);
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: PROMPTS[mode] }] },
-        contents: [{ role: "user", parts: [{ text: JSON.stringify(data) }] }],
-        generationConfig: Object.assign(
-          { temperature: 0.3, maxOutputTokens: 2048 },
-          mode === "ask" ? {} : { responseMimeType: "application/json" })
-      })
-    });
-    if (!res.ok) throw new Error("Gemini HTTP " + res.status);
-    const out = await res.json();
-    const parts = (((out.candidates || [])[0] || {}).content || {}).parts || [];
-    let text = parts.filter((x) => !x.thought).map((x) => x.text || "").join("").trim();
-    if (!text) throw new Error("Gemini 빈 응답");
-    if (mode === "ask") return { answer: text };
-    text = text.replace(/^```(?:json)?\s*/i, "").replace(/```$/, "").trim();
-    return JSON.parse(text);
+    const deadline = Date.now() + AI_TIMEOUT[mode];
+    const list = await listGeminiModels(key);
+    const ranked = [...list.filter((m) => !slowModels.has(m)), ...list.filter((m) => slowModels.has(m))];
+    const order = geminiModel && !slowModels.has(geminiModel) ? [geminiModel, ...ranked.filter((m) => m !== geminiModel)] : ranked;
+    let lastError = null;
+    for (const model of order) {
+      const remaining = deadline - Date.now();
+      if (remaining < 800) break;
+      const generationConfig = Object.assign(
+        { temperature: 0.3, maxOutputTokens: MAX_TOKENS[mode] },
+        mode === "ask" ? {} : { responseMimeType: "application/json" });
+      if (!noThinkingUnsupported.has(model)) generationConfig.thinkingConfig = { thinkingBudget: 0 };
+      try {
+        const res = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: PROMPTS[mode] }] },
+            contents: [{ role: "user", parts: [{ text: JSON.stringify(data) }] }],
+            generationConfig
+          })
+        }, Math.min(mode === "parse" ? 2500 : PER_MODEL_TIMEOUT, remaining));
+        if (res.status === 400 && generationConfig.thinkingConfig) {
+          // 이 모델은 생각 끄기를 지원하지 않아요. 옵션 없이 다시 시도해요.
+          noThinkingUnsupported.add(model);
+          order.splice(order.indexOf(model) + 1, 0, model);
+          continue;
+        }
+        if (res.status === 401 || res.status === 403) throw Object.assign(new Error("Gemini 키 권한 오류 HTTP " + res.status), { fatal: true });
+        if (!res.ok) throw new Error(`Gemini HTTP ${res.status} (${model})`);
+        const out = await res.json();
+        const parts = (((out.candidates || [])[0] || {}).content || {}).parts || [];
+        const text = parts.filter((x) => !x.thought).map((x) => x.text || "").join("").trim();
+        if (!text) throw new Error(`Gemini 빈 응답 (${model})`);
+        const result = mode === "ask" ? { answer: text }
+          : JSON.parse(text.replace(/^```(?:json)?\s*/i, "").replace(/```$/, "").trim());
+        if (geminiModel !== model) console.info("Gemini 사용 모델:", model);
+        geminiModel = model;
+        slowModels.delete(model);
+        return result;
+      } catch (err) {
+        lastError = err.name === "AbortError" ? new Error(`Gemini 시간 초과 (${model})`) : err;
+        if (err.fatal) break;
+        slowModels.add(model);
+        if (geminiModel === model) geminiModel = null;
+        console.warn(lastError.message, "→ 다음 모델 시도");
+      }
+    }
+    throw lastError || new Error("Gemini 시간 초과");
   }
 
   // Lambda와 같은 요청/응답 형식으로 AI를 불러요.
@@ -502,7 +644,7 @@
   function renderResults() {
     const list = currentMatches;
     $("summary").innerHTML = list.length
-      ? `<span class="count">${list.length}</span>개의 혜택을 받을 수 있어요`
+      ? `<span class="count">${list.length}</span>개의 혜택을 받을 수 있어요<span class="swipe-hint">옆으로 넘겨보세요 →</span>`
       : `조건에 맞는 혜택을 찾지 못했어요<br><span class="empty">나이나 소득 조건을 다시 확인해 주세요.</span>`;
 
     $("results").innerHTML = list.map((p) => `
@@ -520,8 +662,8 @@
           <a class="link-btn" href="${esc(p.url)}" target="_blank" rel="noopener">신청 페이지</a>
           <button type="button" class="alarm-btn">마감 알림 받기</button>
         </div>
-        <div class="ask">
-          <div class="ask-title">이 정책, 더 물어보기</div>
+        <details class="ask">
+          <summary>💬 이 정책, ${aiEnabled() ? "AI에게 " : ""}더 물어보기</summary>
           <div class="chips">
             ${EXAMPLE_QUESTIONS.map((q) => `<button type="button" class="chip">${esc(q)}</button>`).join("")}
           </div>
@@ -530,7 +672,7 @@
             <button type="button" class="ask-btn">질문</button>
           </div>
           <div class="bubbles"></div>
-        </div>
+        </details>
       </article>
     `).join("");
   }
@@ -753,20 +895,22 @@
     const v = $("gemini-key").value.trim();
     if (!v) { toast("키를 붙여넣어 주세요"); return; }
     try { localStorage.setItem(GEMINI_KEY_STORAGE, v); } catch (e) { toast("이 브라우저에서는 저장할 수 없어요"); return; }
-    geminiModel = null;
+    geminiModel = null; geminiCandidates = null;
     $("gemini-key").value = "";
     refreshAiStatus();
     toast("AI가 연결됐어요");
+    listGeminiModels(v).catch((e) => console.warn(e.message));
   });
   $("gemini-clear").addEventListener("click", () => {
     try { localStorage.removeItem(GEMINI_KEY_STORAGE); } catch (e) {}
-    geminiModel = null;
+    geminiModel = null; geminiCandidates = null;
     refreshAiStatus();
     toast("AI 연결을 해제했어요");
   });
 
   async function init() {
     refreshAiStatus();
+    if (getGeminiKey()) listGeminiModels(getGeminiKey()).catch((e) => console.warn(e.message));
     try {
       const res = await fetch("personas.json");
       const data = await res.json();
