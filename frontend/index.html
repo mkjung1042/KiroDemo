@@ -1,1 +1,1289 @@
-<!-- ③ 프론트 담당 -->
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="내 조건에 맞는 청년 정책을 쉽고 빠르게 찾아보세요.">
+  <title>청년혜택 찾기</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#1C1936;
+      --paper:#F6F4FC;
+      --card:#FFFFFE;
+      --violet:#6B4EF0;
+      --lime:#C8F169;
+      --muted:#57536F;
+      --line:#DDD7F3;
+      --night:#26224A;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-width: 0;
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Noto Sans KR', sans-serif;
+      line-height: 1.6;
+      word-break: keep-all;
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    button, a, input, select {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--ink);
+      outline-offset: 3px;
+    }
+
+    .page-shell {
+      width: min(100%, 960px);
+      margin-inline: auto;
+      padding-inline: 16px;
+    }
+
+    .site-header {
+      position: relative;
+      overflow: hidden;
+      padding: 42px 0 34px;
+      background: var(--ink);
+      color: var(--card);
+    }
+
+    .site-header::after {
+      position: absolute;
+      right: -52px;
+      bottom: -74px;
+      width: 190px;
+      height: 190px;
+      border: 34px solid var(--lime);
+      border-radius: 50%;
+      content: "";
+      opacity: .95;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      margin: 0 0 18px;
+      padding: 5px 13px;
+      border-radius: 999px;
+      background: var(--lime);
+      color: var(--ink);
+      font-size: .84rem;
+      font-weight: 700;
+    }
+
+    h1, h2, h3, p {
+      margin-top: 0;
+    }
+
+    h1 {
+      max-width: 700px;
+      margin-bottom: 14px;
+      color: var(--card);
+      font-size: clamp(2rem, 8vw, 3.75rem);
+      font-weight: 900;
+      line-height: 1.2;
+      letter-spacing: -.045em;
+    }
+
+    .hero-highlight {
+      color: var(--lime);
+    }
+
+    .hero-description {
+      max-width: 590px;
+      margin-bottom: 0;
+      color: var(--card);
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    main {
+      padding-block: 28px 72px;
+    }
+
+    .search-panel,
+    .policy-card {
+      border: 2px solid var(--line);
+      border-radius: 24px;
+      background: var(--card);
+      box-shadow: 0 12px 34px rgba(38, 34, 74, .08);
+    }
+
+    .search-panel {
+      padding: 22px 18px;
+    }
+
+    .section-heading {
+      margin-bottom: 6px;
+      font-size: clamp(1.35rem, 6vw, 1.85rem);
+      line-height: 1.35;
+    }
+
+    .section-description {
+      margin-bottom: 22px;
+      color: var(--muted);
+    }
+
+    .search-form {
+      display: grid;
+      gap: 17px;
+    }
+
+    .field-group {
+      min-width: 0;
+    }
+
+    label,
+    .field-label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--ink);
+      font-size: .94rem;
+      font-weight: 700;
+    }
+
+    .input-with-unit {
+      position: relative;
+    }
+
+    .input-with-unit input {
+      padding-right: 58px;
+    }
+
+    .input-unit {
+      position: absolute;
+      top: 50%;
+      right: 16px;
+      color: var(--muted);
+      font-size: .9rem;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 48px;
+      border: 1px solid #A9A2C7;
+      border-radius: 12px;
+      background: var(--card);
+      color: var(--ink);
+      padding: 11px 13px;
+    }
+
+    input::placeholder {
+      color: #716C87;
+    }
+
+    input:hover,
+    select:hover {
+      border-color: var(--violet);
+    }
+
+    input[aria-invalid="true"],
+    select[aria-invalid="true"] {
+      border: 2px solid #9B244B;
+    }
+
+    .field-error {
+      min-height: 1.4em;
+      margin: 5px 0 0;
+      color: #852042;
+      font-size: .84rem;
+      font-weight: 600;
+    }
+
+    .form-error-summary {
+      display: none;
+      margin: 0;
+      border-left: 4px solid #9B244B;
+      border-radius: 8px;
+      background: #F8E7ED;
+      color: #701A37;
+      padding: 11px 13px;
+      font-weight: 700;
+    }
+
+    .form-error-summary.is-visible {
+      display: block;
+    }
+
+    .primary-button,
+    .secondary-button,
+    .example-button,
+    .notify-button {
+      min-height: 46px;
+      border-radius: 12px;
+      padding: 10px 15px;
+      font-weight: 700;
+      transition: transform .16s ease, background-color .16s ease, border-color .16s ease;
+    }
+
+    .primary-button {
+      width: 100%;
+      border: 2px solid var(--violet);
+      border-radius: 16px;
+      background: var(--violet);
+      color: var(--card);
+    }
+
+    .primary-button:hover {
+      background: #5438D4;
+      border-color: #5438D4;
+      transform: translateY(-1px);
+    }
+
+    .results-section {
+      padding-top: 42px;
+    }
+
+    .results-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      justify-content: space-between;
+      gap: 8px 20px;
+      margin-bottom: 18px;
+    }
+
+    .results-header h2 {
+      margin-bottom: 0;
+      font-size: clamp(1.4rem, 6vw, 2rem);
+    }
+
+    .result-summary {
+      min-height: 1.7em;
+      margin-bottom: 0;
+      color: var(--muted);
+    }
+
+    .result-count {
+      color: var(--violet);
+      font-size: 1.35em;
+      font-weight: 800;
+    }
+
+    .policy-list {
+      display: grid;
+      gap: 18px;
+    }
+
+    .policy-card {
+      min-width: 0;
+      padding: 20px 17px;
+      overflow-wrap: anywhere;
+    }
+
+    .card-heading {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .policy-name {
+      flex: 1 1 210px;
+      margin-bottom: 0;
+      font-size: 1.25rem;
+      line-height: 1.4;
+    }
+
+    .deadline-badge {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 74px;
+      border-radius: 12px;
+      background: var(--violet);
+      color: var(--card);
+      padding: 7px 10px;
+      text-align: center;
+      line-height: 1.25;
+    }
+
+    .deadline-badge.deadline-soon {
+      background: var(--lime);
+      color: var(--ink);
+    }
+
+    .dday-text {
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .deadline-label {
+      font-size: .7rem;
+      font-weight: 600;
+    }
+
+    .benefit-label,
+    .reason-label,
+    .examples-label {
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .02em;
+    }
+
+    .benefit-text {
+      margin-bottom: 10px;
+      font-size: 1.02rem;
+      font-weight: 600;
+    }
+
+    .deadline-date {
+      margin-bottom: 15px;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .policy-link,
+    .link-unavailable {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      margin-bottom: 18px;
+      font-weight: 700;
+    }
+
+    .policy-link {
+      justify-content: center;
+      border: 2px solid var(--violet);
+      border-radius: 12px;
+      color: var(--violet);
+      padding: 9px 14px;
+      text-decoration: none;
+    }
+
+    .policy-link:hover {
+      background: #EEEAFB;
+    }
+
+    .link-unavailable {
+      color: var(--muted);
+    }
+
+    .reason-box {
+      margin-bottom: 19px;
+      border-radius: 14px;
+      background-color: #EEEAFB;
+      padding: 14px;
+    }
+
+    .reason-box p:last-child {
+      margin-bottom: 0;
+    }
+
+    .reason-label {
+      color: var(--violet);
+    }
+
+    .question-title {
+      margin-bottom: 12px;
+      color: var(--ink);
+      font-size: 1.05rem;
+      font-weight: 900;
+    }
+
+    .question-area {
+      border-top: 1px solid var(--line);
+      padding-top: 18px;
+    }
+
+    .example-buttons {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    .example-button {
+      width: 100%;
+      border: 1px solid #A9A2C7;
+      background: var(--paper);
+      color: var(--ink);
+      text-align: left;
+    }
+
+    .example-button:hover {
+      border-color: var(--violet);
+      background: #EEEAFB;
+    }
+
+    .question-form {
+      display: grid;
+      gap: 9px;
+    }
+
+    .question-form .secondary-button {
+      width: 100%;
+    }
+
+    .secondary-button {
+      border: 2px solid var(--violet);
+      background: var(--violet);
+      color: var(--card);
+    }
+
+    .notify-button {
+      border: 2px solid var(--ink);
+      background: var(--ink);
+      color: var(--card);
+    }
+
+    .secondary-button:hover,
+    .notify-button:hover {
+      background: #393360;
+    }
+
+    .answer-region {
+      min-height: 1px;
+    }
+
+    .answer-bubble {
+      margin: 13px 0 0;
+      border-radius: 14px 14px 14px 4px;
+      background-color: var(--night);
+      color: #F3F1FA;
+      padding: 13px 15px;
+    }
+
+    .notify-button {
+      width: 100%;
+      margin-top: 14px;
+    }
+
+    .notify-button:hover {
+      background: var(--lime);
+      color: var(--ink);
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 10;
+      left: 50%;
+      bottom: 22px;
+      width: max-content;
+      max-width: calc(100vw - 32px);
+      border: 1px solid var(--lime);
+      border-radius: 999px;
+      background: var(--ink);
+      color: var(--lime);
+      padding: 12px 18px;
+      box-shadow: 0 12px 30px rgba(38, 34, 74, .25);
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 16px);
+      transition: opacity .2s ease, transform .2s ease;
+    }
+
+    .toast.is-visible {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    @media (min-width: 768px) {
+      .site-header {
+        padding-block: 62px 52px;
+      }
+
+      main {
+        padding-top: 38px;
+      }
+
+      .search-panel {
+        padding: 30px;
+      }
+
+      .search-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .search-form .full-row {
+        grid-column: 1 / -1;
+      }
+
+      .policy-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .policy-card {
+        padding: 24px;
+      }
+
+      .question-form {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: end;
+      }
+
+      .question-form .field-group {
+        min-width: 0;
+      }
+
+      .question-form .secondary-button {
+        width: auto;
+        min-width: 84px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *, *::before, *::after {
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="page-shell hero-content">
+      <p class="eyebrow">Built with Kiro · Powered by AWS</p>
+      <h1>청년혜택 찾기</h1>
+      <p class="hero-description">내 조건에 맞는 <span class="hero-highlight">청년 혜택</span>과 추천 이유를 한눈에 확인하세요.</p>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="search-panel" aria-labelledby="search-title">
+      <h2 id="search-title" class="section-heading">내 조건 입력하기</h2>
+      <p class="section-description">입력한 정보는 정책 검색에만 사용되며 저장되지 않아요.</p>
+
+      <form id="search-form" class="search-form" novalidate>
+        <div class="field-group">
+          <label for="age">나이</label>
+          <div class="input-with-unit">
+            <input id="age" name="age" type="number" min="0" step="1" inputmode="numeric" placeholder="예: 27" aria-describedby="age-error" required>
+            <span class="input-unit" aria-hidden="true">세</span>
+          </div>
+          <p id="age-error" class="field-error"></p>
+        </div>
+
+        <div class="field-group">
+          <label for="region">지역</label>
+          <select id="region" name="region" aria-describedby="region-error" required>
+            <option value="">지역을 선택해 주세요</option>
+            <option value="서울">서울</option>
+            <option value="경기">경기</option>
+            <option value="인천">인천</option>
+            <option value="부산">부산</option>
+            <option value="기타">기타</option>
+          </select>
+          <p id="region-error" class="field-error"></p>
+        </div>
+
+        <div class="field-group">
+          <label for="income">연 소득</label>
+          <div class="input-with-unit">
+            <input id="income" name="income" type="number" min="0" step="1" inputmode="numeric" placeholder="예: 3000" aria-describedby="income-hint income-error" required>
+            <span class="input-unit" aria-hidden="true">만원</span>
+          </div>
+          <span id="income-hint" class="field-label">만원 단위로 입력해 주세요.</span>
+          <p id="income-error" class="field-error"></p>
+        </div>
+
+        <div class="field-group">
+          <label for="employment">취업 상태</label>
+          <select id="employment" name="employment" aria-describedby="employment-error" required>
+            <option value="">취업 상태를 선택해 주세요</option>
+            <option value="재직">재직</option>
+            <option value="구직">구직</option>
+            <option value="학생">학생</option>
+          </select>
+          <p id="employment-error" class="field-error"></p>
+        </div>
+
+        <div class="field-group">
+          <label for="housing">주거 형태</label>
+          <select id="housing" name="housing" aria-describedby="housing-error" required>
+            <option value="">주거 형태를 선택해 주세요</option>
+            <option value="월세">월세</option>
+            <option value="전세">전세</option>
+            <option value="자가">자가</option>
+            <option value="부모님집">부모님집</option>
+          </select>
+          <p id="housing-error" class="field-error"></p>
+        </div>
+
+        <p id="form-error-summary" class="form-error-summary full-row" role="alert" tabindex="-1"></p>
+        <button class="primary-button full-row" type="submit">내 혜택 찾기</button>
+      </form>
+    </section>
+
+    <section id="results" class="results-section" aria-labelledby="results-title">
+      <div class="results-header">
+        <h2 id="results-title">맞춤 정책 결과</h2>
+        <p id="result-summary" class="result-summary" role="status" aria-live="polite" aria-atomic="true">조건을 입력하고 정책을 찾아보세요.</p>
+      </div>
+      <div id="policy-list" class="policy-list"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+const API_URL = "";
+
+const SAMPLE_POLICIES = [
+  {
+    id: "sample-youth-rent",
+    name: "청년 월세 지원",
+    minAge: 19,
+    maxAge: 34,
+    regions: ["전국"],
+    maxIncome: 3500,
+    employment: ["재직", "구직", "학생"],
+    housing: ["월세"],
+    benefit: "월세 부담을 줄이는 주거비 지원",
+    deadline: "2026-12-31",
+    url: "https://www.youthcenter.go.kr/",
+    reason: "청년 월세 거주자를 위한 주거비 지원 조건에 해당합니다."
+  },
+  {
+    id: "sample-job-support",
+    name: "청년 취업 준비 지원",
+    minAge: 18,
+    maxAge: 39,
+    regions: ["서울", "경기", "인천", "부산", "기타"],
+    maxIncome: 4200,
+    employment: ["구직", "학생"],
+    housing: ["월세", "전세", "자가", "부모님집"],
+    benefit: "취업 준비 활동비와 상담 지원",
+    deadline: "2026-09-30",
+    url: "https://www.work24.go.kr/"
+  },
+  {
+    id: "sample-housing-loan",
+    name: "청년 전세자금 지원",
+    minAge: 19,
+    maxAge: 39,
+    regions: ["전국"],
+    maxIncome: null,
+    employment: ["재직", "구직", "학생"],
+    housing: ["전세"],
+    benefit: "전세 보증금 대출 이자 부담 완화",
+    deadline: "2026-08-31",
+    url: "https://nhuf.molit.go.kr/"
+  }
+];
+
+const state = {
+  user: null,
+  policies: SAMPLE_POLICIES.slice(),
+  matchedPolicies: []
+};
+
+let searchRevision = 0;
+const answerRevisions = new Map();
+let cardViews = [];
+let toastTimer = null;
+let toastFrame = null;
+
+const dom = {};
+const allowedValues = {
+  region: new Set(["서울", "경기", "인천", "부산", "기타"]),
+  employment: new Set(["재직", "구직", "학생"]),
+  housing: new Set(["월세", "전세", "자가", "부모님집"])
+};
+const fallbackAnswer = "지금은 답변이 어려워요. 신청 페이지에서 확인해 주세요.";
+const exampleQuestions = [
+  "신청하려면 뭐가 필요해?",
+  "언제까지 신청해?"
+];
+
+function cacheDomReferences() {
+  dom.searchForm = document.getElementById("search-form");
+  dom.resultSummary = document.getElementById("result-summary");
+  dom.policyList = document.getElementById("policy-list");
+  dom.toast = document.getElementById("toast");
+  dom.formErrorSummary = document.getElementById("form-error-summary");
+  dom.fields = {
+    age: document.getElementById("age"),
+    region: document.getElementById("region"),
+    income: document.getElementById("income"),
+    employment: document.getElementById("employment"),
+    housing: document.getElementById("housing")
+  };
+  dom.errors = {
+    age: document.getElementById("age-error"),
+    region: document.getElementById("region-error"),
+    income: document.getElementById("income-error"),
+    employment: document.getElementById("employment-error"),
+    housing: document.getElementById("housing-error")
+  };
+}
+
+function bindEvents() {
+  dom.searchForm.addEventListener("submit", handleSearchSubmit);
+  dom.policyList.addEventListener("click", handleResultsClick);
+  dom.policyList.addEventListener("submit", handleResultsSubmit);
+}
+
+async function loadPolicies() {
+  try {
+    const response = await fetch("./policies.json");
+    if (!response.ok) {
+      throw new Error("policy-load-failed");
+    }
+    const data = await response.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error("policy-data-invalid");
+    }
+    state.policies = data;
+  } catch (error) {
+    state.policies = SAMPLE_POLICIES.slice();
+  }
+}
+
+function clearFormErrors() {
+  Object.keys(dom.fields).forEach((key) => {
+    dom.fields[key].removeAttribute("aria-invalid");
+    dom.errors[key].textContent = "";
+  });
+  dom.formErrorSummary.textContent = "";
+  dom.formErrorSummary.classList.remove("is-visible");
+}
+
+function showFormErrors(errors) {
+  const entries = Object.entries(errors);
+  entries.forEach(([key, message]) => {
+    dom.fields[key].setAttribute("aria-invalid", "true");
+    dom.errors[key].textContent = message;
+  });
+  dom.formErrorSummary.textContent = "입력 내용을 확인해 주세요. 아래 항목을 수정하면 정책을 찾을 수 있어요.";
+  dom.formErrorSummary.classList.add("is-visible");
+  if (entries.length > 0) {
+    dom.fields[entries[0][0]].focus();
+  }
+}
+
+function readAndValidateUser() {
+  clearFormErrors();
+
+  const ageText = dom.fields.age.value.trim();
+  const incomeText = dom.fields.income.value.trim();
+  const age = Number(ageText);
+  const income = Number(incomeText);
+  const region = dom.fields.region.value;
+  const employment = dom.fields.employment.value;
+  const housing = dom.fields.housing.value;
+  const errors = {};
+
+  if (ageText === "" || !Number.isFinite(age) || !Number.isInteger(age) || age < 0) {
+    errors.age = "나이를 올바르게 입력해 주세요.";
+  }
+  if (!allowedValues.region.has(region)) {
+    errors.region = "지역을 선택해 주세요.";
+  }
+  if (incomeText === "" || !Number.isFinite(income) || income < 0) {
+    errors.income = "소득을 올바르게 입력해 주세요.";
+  }
+  if (!allowedValues.employment.has(employment)) {
+    errors.employment = "취업 상태를 선택해 주세요.";
+  }
+  if (!allowedValues.housing.has(housing)) {
+    errors.housing = "주거 형태를 선택해 주세요.";
+  }
+
+  if (Object.keys(errors).length > 0) {
+    showFormErrors(errors);
+    return null;
+  }
+
+  return { age, region, income, employment, housing };
+}
+
+function matchesPolicy(policy, user) {
+  if (!policy || typeof policy !== "object") {
+    return false;
+  }
+
+  const ageMatches = Number.isFinite(policy.minAge)
+    && Number.isFinite(policy.maxAge)
+    && policy.minAge <= user.age
+    && user.age <= policy.maxAge;
+  const regionMatches = Array.isArray(policy.regions)
+    && (policy.regions.includes("전국") || policy.regions.includes(user.region));
+  const incomeMatches = policy.maxIncome === null
+    || (Number.isFinite(policy.maxIncome) && user.income <= policy.maxIncome);
+  const employmentMatches = Array.isArray(policy.employment)
+    && policy.employment.includes(user.employment);
+  const housingMatches = Array.isArray(policy.housing)
+    && policy.housing.includes(user.housing);
+
+  return ageMatches
+    && regionMatches
+    && incomeMatches
+    && employmentMatches
+    && housingMatches;
+}
+
+function filterPolicies(allPolicies, user) {
+  if (!Array.isArray(allPolicies)) {
+    return [];
+  }
+  return allPolicies.filter((policy) => matchesPolicy(policy, user));
+}
+
+function handleSearchSubmit(event) {
+  event.preventDefault();
+  const user = readAndValidateUser();
+  if (!user) {
+    return;
+  }
+
+  state.user = user;
+  state.matchedPolicies = filterPolicies(state.policies, user);
+  searchRevision += 1;
+  answerRevisions.clear();
+  const revision = searchRevision;
+  renderResults(state.matchedPolicies);
+
+  window.requestAnimationFrame(() => {
+    requestExplanations(user, state.matchedPolicies.slice(), revision);
+  });
+}
+
+function safeText(value, fallback) {
+  return typeof value === "string" && value.trim() !== "" ? value : fallback;
+}
+
+function createTextElement(tagName, className, text) {
+  const element = document.createElement(tagName);
+  if (className) {
+    element.className = className;
+  }
+  element.textContent = text;
+  return element;
+}
+
+function calculateDday(deadline, now = new Date()) {
+  if (typeof deadline !== "string") {
+    return null;
+  }
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(deadline);
+  if (!match) {
+    return null;
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const deadlineUtc = Date.UTC(year, month - 1, day);
+  const verified = new Date(deadlineUtc);
+
+  if (verified.getUTCFullYear() !== year
+      || verified.getUTCMonth() !== month - 1
+      || verified.getUTCDate() !== day) {
+    return null;
+  }
+
+  const todayUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((deadlineUtc - todayUtc) / 86400000);
+}
+
+function formatDday(days) {
+  if (days === null) {
+    return "확인 필요";
+  }
+  if (days < 0) {
+    return "마감";
+  }
+  if (days === 0) {
+    return "D-day";
+  }
+  return `D-${days}`;
+}
+
+function createDeadlineBadge(policy) {
+  const days = calculateDday(policy ? policy.deadline : undefined);
+  const badge = document.createElement("div");
+  badge.className = "deadline-badge";
+  badge.setAttribute("aria-label", days === null ? "마감일 확인 필요" : `마감 상태 ${formatDday(days)}`);
+
+  if (days !== null && days >= 0 && days <= 7) {
+    badge.classList.add("deadline-soon");
+  }
+
+  badge.append(createTextElement("span", "dday-text", formatDday(days)));
+  const label = days !== null && days >= 0 && days <= 7 ? "마감 임박" : "신청 일정";
+  badge.append(createTextElement("span", "deadline-label", label));
+  return { badge, days };
+}
+
+function createSafePolicyLink(urlValue) {
+  const wrapper = document.createElement("div");
+  if (typeof urlValue !== "string") {
+    wrapper.append(createTextElement("span", "link-unavailable", "정책 링크를 확인할 수 없어요."));
+    return wrapper;
+  }
+
+  try {
+    const url = new URL(urlValue, window.location.href);
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      throw new Error("unsafe-url");
+    }
+    const anchor = createTextElement("a", "policy-link", "정책 신청 페이지 열기");
+    anchor.href = url.href;
+    anchor.target = "_blank";
+    anchor.rel = "noopener noreferrer";
+    wrapper.append(anchor);
+  } catch (error) {
+    wrapper.append(createTextElement("span", "link-unavailable", "정책 링크를 확인할 수 없어요."));
+  }
+  return wrapper;
+}
+
+function createPolicyCard(policy, index) {
+  const article = document.createElement("article");
+  article.className = "policy-card";
+  article.setAttribute("aria-labelledby", `policy-title-${index}`);
+
+  const heading = document.createElement("div");
+  heading.className = "card-heading";
+  const title = createTextElement("h3", "policy-name", safeText(policy && policy.name, "이름 없는 정책"));
+  title.id = `policy-title-${index}`;
+  const deadlineInfo = createDeadlineBadge(policy);
+  heading.append(title, deadlineInfo.badge);
+  article.append(heading);
+
+  article.append(createTextElement("p", "benefit-label", "받을 수 있는 혜택"));
+  article.append(createTextElement("p", "benefit-text", safeText(policy && policy.benefit, "혜택 정보를 확인해 주세요.")));
+
+  let deadlineDescription = "마감일 확인 필요";
+  if (deadlineInfo.days !== null) {
+    deadlineDescription = `신청 마감일 ${policy.deadline}`;
+  }
+  article.append(createTextElement("p", "deadline-date", deadlineDescription));
+  article.append(createSafePolicyLink(policy && policy.url));
+
+  const reasonBox = document.createElement("div");
+  reasonBox.className = "reason-box";
+  reasonBox.append(createTextElement("p", "reason-label", "왜 나에게 해당될까요?"));
+  const reasonText = createTextElement("p", "reason-text", "AI가 분석 중...");
+  reasonBox.append(reasonText);
+  article.append(reasonBox);
+
+  const questionArea = document.createElement("div");
+  questionArea.className = "question-area";
+  questionArea.append(createTextElement("h4", "question-title", "이 정책, 더 물어보기"));
+  questionArea.append(createTextElement("p", "examples-label", "예시 질문을 누르거나 직접 입력해 보세요"));
+
+  const exampleButtons = document.createElement("div");
+  exampleButtons.className = "example-buttons";
+  exampleQuestions.forEach((question) => {
+    const button = createTextElement("button", "example-button", question);
+    button.type = "button";
+    button.dataset.action = "example-question";
+    button.dataset.policyIndex = String(index);
+    button.dataset.question = question;
+    exampleButtons.append(button);
+  });
+  questionArea.append(exampleButtons);
+
+  const questionForm = document.createElement("form");
+  questionForm.className = "question-form";
+  questionForm.dataset.action = "question-form";
+  questionForm.dataset.policyIndex = String(index);
+  questionForm.noValidate = true;
+
+  const fieldGroup = document.createElement("div");
+  fieldGroup.className = "field-group";
+  const inputId = `question-${index}`;
+  const questionLabel = createTextElement("label", "", `${safeText(policy && policy.name, "이 정책")}에 질문하기`);
+  questionLabel.htmlFor = inputId;
+  const questionInput = document.createElement("input");
+  questionInput.id = inputId;
+  questionInput.name = "question";
+  questionInput.type = "text";
+  questionInput.placeholder = "궁금한 내용을 입력해 주세요";
+  questionInput.autocomplete = "off";
+  fieldGroup.append(questionLabel, questionInput);
+
+  const submitButton = createTextElement("button", "secondary-button", "질문");
+  submitButton.type = "submit";
+  questionForm.append(fieldGroup, submitButton);
+  questionArea.append(questionForm);
+
+  const answerRegion = document.createElement("div");
+  answerRegion.className = "answer-region";
+  answerRegion.setAttribute("role", "status");
+  answerRegion.setAttribute("aria-live", "polite");
+  answerRegion.setAttribute("aria-atomic", "true");
+  questionArea.append(answerRegion);
+
+  const notifyButton = createTextElement("button", "notify-button", "마감 알림 받기");
+  notifyButton.type = "button";
+  notifyButton.dataset.action = "notify";
+  notifyButton.dataset.policyIndex = String(index);
+  questionArea.append(notifyButton);
+  article.append(questionArea);
+
+  return { article, reasonText, answerRegion, questionInput, policyIndex: index };
+}
+
+function renderResults(policies) {
+  const fragment = document.createDocumentFragment();
+  cardViews = [];
+
+  policies.forEach((policy, index) => {
+    const view = createPolicyCard(policy, index);
+    cardViews.push(view);
+    fragment.append(view.article);
+  });
+
+  dom.policyList.replaceChildren(fragment);
+  dom.resultSummary.replaceChildren();
+  const count = createTextElement("strong", "result-count", String(policies.length));
+  dom.resultSummary.append(count, document.createTextNode(policies.length === 0
+    ? "개의 혜택을 받을 수 있어요. 다른 조건으로 다시 찾아보세요."
+    : "개의 혜택을 받을 수 있어요"));
+}
+
+function getFallbackReason(policy) {
+  if (policy && typeof policy.reason === "string" && policy.reason.trim() !== "") {
+    return policy.reason;
+  }
+  return "나이·지역·소득 조건이 일치합니다";
+}
+
+function setReason(index, reason) {
+  const view = cardViews[index];
+  if (view) {
+    view.reasonText.textContent = reason;
+  }
+}
+
+function applyFallbackReasons(policies, revision) {
+  if (revision !== searchRevision) {
+    return;
+  }
+  policies.forEach((policy, index) => {
+    setReason(index, getFallbackReason(policy));
+  });
+}
+
+async function requestExplanations(user, policies, revision) {
+  if (revision !== searchRevision || policies.length === 0) {
+    return;
+  }
+
+  if (API_URL.trim() === "") {
+    applyFallbackReasons(policies, revision);
+    return;
+  }
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode: "explain", user, policies })
+    });
+    if (!response.ok) {
+      throw new Error("explain-request-failed");
+    }
+    const data = await response.json();
+    if (!data || !Array.isArray(data.results)) {
+      throw new Error("explain-response-invalid");
+    }
+    if (revision !== searchRevision) {
+      return;
+    }
+
+    const reasons = new Map();
+    data.results.forEach((result) => {
+      if (!result || (typeof result.id !== "string" && typeof result.id !== "number")) {
+        return;
+      }
+      if (typeof result.reason === "string" && result.reason.trim() !== "") {
+        reasons.set(String(result.id), result.reason);
+      }
+    });
+
+    policies.forEach((policy, index) => {
+      const policyId = policy && (typeof policy.id === "string" || typeof policy.id === "number")
+        ? String(policy.id)
+        : null;
+      const reason = policyId !== null && reasons.has(policyId)
+        ? reasons.get(policyId)
+        : getFallbackReason(policy);
+      setReason(index, reason);
+    });
+  } catch (error) {
+    applyFallbackReasons(policies, revision);
+  }
+}
+
+function getPolicyIndex(element) {
+  const index = Number(element.dataset.policyIndex);
+  if (!Number.isInteger(index) || index < 0 || index >= state.matchedPolicies.length) {
+    return null;
+  }
+  return index;
+}
+
+function handleResultsClick(event) {
+  const actionTarget = event.target.closest("[data-action]");
+  if (!actionTarget || !dom.policyList.contains(actionTarget)) {
+    return;
+  }
+
+  if (actionTarget.dataset.action === "notify") {
+    const index = getPolicyIndex(actionTarget);
+    if (index !== null) {
+      showToast();
+    }
+    return;
+  }
+
+  if (actionTarget.dataset.action === "example-question") {
+    const index = getPolicyIndex(actionTarget);
+    if (index === null) {
+      return;
+    }
+    const question = actionTarget.dataset.question;
+    const view = cardViews[index];
+    if (!view || typeof question !== "string" || question.trim() === "") {
+      return;
+    }
+    view.questionInput.value = question;
+    requestAnswer(state.user, state.matchedPolicies[index], question, index);
+  }
+}
+
+function handleResultsSubmit(event) {
+  const form = event.target.closest('[data-action="question-form"]');
+  if (!form || !dom.policyList.contains(form)) {
+    return;
+  }
+  event.preventDefault();
+
+  const index = getPolicyIndex(form);
+  if (index === null) {
+    return;
+  }
+  const view = cardViews[index];
+  const question = view.questionInput.value.trim();
+  if (question === "") {
+    setAnswerState(index, "질문을 입력해 주세요.");
+    view.questionInput.focus();
+    return;
+  }
+  requestAnswer(state.user, state.matchedPolicies[index], question, index);
+}
+
+function setAnswerState(index, message) {
+  const view = cardViews[index];
+  if (!view) {
+    return;
+  }
+  const bubble = createTextElement("p", "answer-bubble", message);
+  view.answerRegion.replaceChildren(bubble);
+}
+
+async function requestAnswer(user, policy, question, policyIndex) {
+  const nextRevision = Symbol();
+  answerRevisions.set(policyIndex, nextRevision);
+  setAnswerState(policyIndex, "답변 작성 중...");
+
+  if (API_URL.trim() === "") {
+    await new Promise((resolve) => window.requestAnimationFrame(resolve));
+    if (answerRevisions.get(policyIndex) === nextRevision) {
+      setAnswerState(policyIndex, fallbackAnswer);
+    }
+    return;
+  }
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode: "ask", user, policy, question })
+    });
+    if (!response.ok) {
+      throw new Error("answer-request-failed");
+    }
+    const data = await response.json();
+    if (!data || typeof data.answer !== "string" || data.answer.trim() === "") {
+      throw new Error("answer-response-invalid");
+    }
+    if (answerRevisions.get(policyIndex) === nextRevision) {
+      setAnswerState(policyIndex, data.answer);
+    }
+  } catch (error) {
+    if (answerRevisions.get(policyIndex) === nextRevision) {
+      setAnswerState(policyIndex, fallbackAnswer);
+    }
+  }
+}
+
+function showToast() {
+  if (toastTimer !== null) {
+    window.clearTimeout(toastTimer);
+    toastTimer = null;
+  }
+  if (toastFrame !== null) {
+    window.cancelAnimationFrame(toastFrame);
+  }
+  dom.toast.classList.remove("is-visible");
+  dom.toast.textContent = "";
+
+  toastFrame = window.requestAnimationFrame(() => {
+    toastFrame = null;
+    dom.toast.textContent = "알림이 신청되었어요";
+    dom.toast.classList.add("is-visible");
+    toastTimer = window.setTimeout(() => {
+      dom.toast.classList.remove("is-visible");
+      dom.toast.textContent = "";
+      toastTimer = null;
+    }, 3000);
+  });
+}
+
+async function initialize() {
+  cacheDomReferences();
+  bindEvents();
+  await loadPolicies();
+}
+
+initialize();
+  </script>
+</body>
+</html>
