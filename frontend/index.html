@@ -319,6 +319,37 @@
     .actions { flex-direction: column; }
   }
 
+  /* ===== 로딩 애니메이션 ===== */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+  @keyframes blink { 0%, 80%, 100% { opacity: .2; } 40% { opacity: 1; } }
+  .spinner, .why-text.loading::before, .smart-row button.busy::before {
+    content: ""; display: inline-block; width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px;
+    border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite;
+  }
+  .why:has(.why-text.loading) {
+    background: linear-gradient(90deg, var(--soft) 0%, #DCD3FF 50%, var(--soft) 100%);
+    background-size: 800px 100%; animation: shimmer 1.4s linear infinite;
+  }
+  .why-text.loading { color: var(--violet); font-weight: 500; }
+  .smart-row button.busy { opacity: 1; cursor: wait; }
+  .a.typing { display: inline-flex; gap: 6px; align-items: center; }
+  .a.typing span { width: 7px; height: 7px; border-radius: 50%; background: #F3F1FA; animation: blink 1.2s infinite; }
+  .a.typing span:nth-child(2) { animation-delay: .2s; }
+  .a.typing span:nth-child(3) { animation-delay: .4s; }
+  .a.typing em { font-style: normal; font-size: 13px; color: #BDB8DA; margin-left: 4px; }
+
+  /* ===== 연봉 계산기 ===== */
+  .calc { background: var(--card); border: 2px solid var(--line); border-radius: 24px; padding: 20px 24px; margin-bottom: 32px; }
+  .calc-title { font-size: 17px; font-weight: 700; margin: 0 0 4px; }
+  .calc-desc { font-size: 14px; color: var(--muted); margin: 0 0 12px; }
+  .calc-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .calc-row select { flex: 0 0 110px; }
+  .calc-row input { flex: 1 1 180px; min-width: 0; }
+  .calc-row button { flex: 0 0 auto; background: var(--violet); color: #FFFFFE; border: none; border-radius: 12px; padding: 0 20px; min-height: 50px; font-family: inherit; font-weight: 700; cursor: pointer; }
+  .calc-result { margin: 10px 0 0; font-size: 15px; font-weight: 700; color: var(--violet); }
+  .calc-result:empty { display: none; }
+
   /* ===== 분류 배지 ===== */
   .badges { display: flex; gap: 6px; flex: none; align-items: center; }
   .cat { font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 999px; white-space: nowrap; }
@@ -340,9 +371,10 @@
     align-items: start;
   }
   #results .card { margin-bottom: 0; display: flex; flex-direction: column; }
-  #results { align-items: stretch; }
-  /* 설명 길이가 달라도 버튼은 카드 아래쪽에 맞춰요 */
-  #results .why { margin-bottom: auto; }
+  #results { align-items: start; }
+  /* 설명 길이가 달라도 접힌 카드는 높이가 비슷하게 맞춰져요 */
+  #results .card h3 { min-height: calc(22px * 1.4 * 2); }
+  #results .why { min-height: 172px; }
   #results .actions { margin-top: 18px; padding-top: 0; }
   #results .benefit { min-height: calc(16px * 1.65 * 2); }
   .swipe-hint { display: none; font-size: 14px; font-weight: 500; color: var(--muted); margin-left: 8px; }
@@ -354,6 +386,7 @@
       width: 100vw;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
+      align-items: flex-start;
       padding: 4px 20px 16px;
       gap: 14px;
       scrollbar-width: none;
@@ -388,6 +421,21 @@
       <button type="button" id="smart-btn">찾기</button>
     </div>
     <p class="smart-result" id="smart-result"></p>
+  </section>
+
+  <section class="calc">
+    <p class="calc-title">💰 연봉 계산기</p>
+    <p class="calc-desc">시급이나 월급만 알아도 괜찮아요. 연봉으로 바꿔서 아래 연소득 칸에 넣어드려요 (시급은 하루 8시간·주 5일 기준)</p>
+    <div class="calc-row">
+      <select id="calc-type">
+        <option value="hour">시급</option>
+        <option value="month">월급</option>
+        <option value="year">연봉</option>
+      </select>
+      <input type="number" id="calc-amount" min="0" placeholder="금액 (원)">
+      <button type="button" id="calc-btn">계산해서 넣기</button>
+    </div>
+    <p class="calc-result" id="calc-result"></p>
   </section>
 
   <p class="section-title">예시로 체험해보기</p>
@@ -761,19 +809,21 @@
     bubbles.insertAdjacentHTML("beforeend", `<div class="q">${esc(question)}</div>`);
     const answer = document.createElement("div");
     answer.className = "a";
-    answer.textContent = aiEnabled() ? "AI가 답변 작성 중..." : "정책 정보 찾는 중...";
+    answer.classList.add("typing");
+    answer.innerHTML = `<span></span><span></span><span></span><em>${aiEnabled() ? "AI가 답변 작성 중" : "정책 정보 찾는 중"}</em>`;
+    const done = (text) => { answer.classList.remove("typing"); answer.textContent = text; };
     bubbles.appendChild(answer);
 
     if (!aiEnabled()) {
-      answer.textContent = localAnswer(policy, question);
+      done(localAnswer(policy, question));
       return;
     }
     try {
       const data = await postApi({ mode: "ask", user: currentUser, policy, question });
-      answer.textContent = data.answer || localAnswer(policy, question);
+      done(data.answer || localAnswer(policy, question));
     } catch (err) {
       console.error(err);
-      answer.textContent = localAnswer(policy, question);
+      done(localAnswer(policy, question));
     }
   }
 
@@ -844,7 +894,8 @@
     if (!text) { toast("상황을 한 문장으로 입력해 주세요"); return; }
     const btn = $("smart-btn");
     btn.disabled = true;
-    btn.textContent = "분석 중";
+    btn.classList.add("busy");
+    btn.textContent = aiEnabled() ? "AI 분석 중" : "분석 중";
     $("smart-result").textContent = "";
 
     let parsed = null;
@@ -871,6 +922,7 @@
     else Object.keys(local).forEach((k) => { if (parsed[k] === null || parsed[k] === undefined) parsed[k] = local[k]; });
 
     btn.disabled = false;
+    btn.classList.remove("busy");
     btn.textContent = "찾기";
     document.querySelectorAll(".persona-btn").forEach((b) => b.classList.remove("active"));
 
@@ -901,6 +953,27 @@
     if (missing.length) toast(missing.map((k) => FIELD_LABELS[k]).join(", ") + "은(는) 기본값으로 찾았어요");
     search();
   }
+
+  // ===== 연봉 계산기 =====
+  const HOURS_PER_YEAR = 8 * 5 * 52; // 하루 8시간 × 주 5일 × 52주 = 2,080시간
+  $("calc-type").addEventListener("change", () => {
+    $("calc-amount").placeholder = { hour: "시급 (원) 예: 10030", month: "월급 (원) 예: 2500000", year: "연봉 (원) 예: 30000000" }[$("calc-type").value];
+  });
+  $("calc-type").dispatchEvent(new Event("change"));
+  function calcIncome() {
+    const won = Number($("calc-amount").value);
+    if (!won || won < 0) { toast("금액을 원 단위로 입력해 주세요"); $("calc-amount").focus(); return; }
+    const type = $("calc-type").value;
+    const yearWon = type === "hour" ? won * HOURS_PER_YEAR : type === "month" ? won * 12 : won;
+    const man = Math.round(yearWon / 10000);
+    $("income").value = man;
+    document.querySelectorAll(".persona-btn").forEach((b) => b.classList.remove("active"));
+    const how = type === "hour" ? `시급 ${won.toLocaleString()}원 × 연 2,080시간` : type === "month" ? `월급 ${won.toLocaleString()}원 × 12개월` : `연봉 ${won.toLocaleString()}원`;
+    $("calc-result").textContent = `연 ${man.toLocaleString()}만 원 (${how}) → 연소득 칸에 넣었어요`;
+    toast("연소득에 입력했어요. 나머지 조건을 확인하고 검색하세요");
+  }
+  $("calc-btn").addEventListener("click", calcIncome);
+  $("calc-amount").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); calcIncome(); } });
 
   $("smart-btn").addEventListener("click", smartSearch);
   $("smart-input").addEventListener("keydown", (e) => {
