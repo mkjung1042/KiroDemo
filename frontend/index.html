@@ -319,6 +319,15 @@
     .actions { flex-direction: column; }
   }
 
+  /* ===== 분류 배지 ===== */
+  .badges { display: flex; gap: 6px; flex: none; align-items: center; }
+  .cat { font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 999px; white-space: nowrap; }
+  .cat-house { background: #E3F0FF; color: #1F5FBF; }
+  .cat-money { background: #FFF1D6; color: #9A5B00; }
+  .cat-asset { background: #E2F6E9; color: #1E7A45; }
+  .cat-job { background: #FCE4EF; color: #A8295E; }
+  .cat-etc { background: var(--line); color: var(--ink); }
+
   /* ===== 결과 카드 가로 배치 ===== */
   #summary, #results {
     position: relative; left: 50%; transform: translateX(-50%);
@@ -481,6 +490,18 @@
       return `<span class="badge${days <= 7 ? " soon" : ""}">${label}</span>`;
     }
     return `<span class="badge text">${esc(deadline || "공고 확인")}</span>`;
+  }
+
+  // 정책 이름·혜택으로 분류를 정해요 (지원금 → 자산형성 → 취업·교육 → 주택 순서로 확인)
+  const CATEGORIES = [
+    { name: "지원금", cls: "cat-money", re: /수당|기본소득|지원금|장려금/ },
+    { name: "자산형성", cls: "cat-asset", re: /계좌|노동자 통장|적금/ },
+    { name: "취업·교육", cls: "cat-job", re: /취업|배움|사관학교|도전|훈련|일자리/ },
+    { name: "주택", cls: "cat-house", re: /월세|전세|주택|임대|청약|보증금|주거/ }
+  ];
+  function categoryOf(p) {
+    const text = (p.name || "") + " " + (p.benefit || "");
+    return CATEGORIES.find((c) => c.re.test(p.name || "")) || CATEGORIES.find((c) => c.re.test(text)) || { name: "기타", cls: "cat-etc" };
   }
 
   function matches(user, p) {
@@ -651,7 +672,7 @@
       <article class="card" data-id="${esc(p.id)}">
         <div class="card-top">
           <h3>${esc(p.name)}</h3>
-          ${deadlineBadge(p.deadline)}
+          <div class="badges"><span class="cat ${categoryOf(p).cls}">${categoryOf(p).name}</span>${deadlineBadge(p.deadline)}</div>
         </div>
         <p class="benefit">${esc(p.benefit)}</p>
         <div class="why">
